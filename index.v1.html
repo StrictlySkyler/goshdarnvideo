@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		
+		<meta charset="utf-8" />
+		<title>HTML5 Accessible Video Player</title>
+		
+		<style>
+		body {
+			width: 960px;
+			margin: 0 auto 0;
+			background: #999;
+		}
+		
+		#video-container {
+			margin: 20px auto 0;
+			width: 640px;
+		}
+		
+		.small-progress-bar {
+			height: 5px;
+			position: absolute;
+			border: none;
+			padding: 0;
+			cursor: pointer;
+		}
+		
+		#small-progress-bar-wrapper {
+			width: 640px;
+			clear: both;
+			position: absolute;
+			top: 30px;
+		}
+		
+		#small-progress-bar-total {
+			width: 100%;
+			background: #000;
+			background: rgba(0,0,0,.7);
+		}
+		
+		#small-progress-bar-current {
+			background: #09f;
+			background: rgba(0,153,255,.7);
+			width: 0;
+		}
+		
+		#small-progress-bar-buffer {
+			background: #000;
+			width: 0;
+		}
+		
+		.main-progress-bar {
+			height: 10px;
+			border: none;
+			cursor: pointer;
+			padding: 0;
+		}
+		
+		#main-progress-bar-wrapper {
+			width: 200px;
+			margin: 10px 0;
+		}
+		
+		#main-progress-bar-total {
+			width: 200px;
+			background: #000;
+			background: rgba(0,0,0,.7);
+			position: absolute;
+			margin: -10px 0 0;
+		}
+		
+		#main-progress-bar-current {
+			width: 0;
+			background: #fff;
+			background: rgba(255,255,255,.5);
+			position: absolute;
+			margin: -10px 0 0;
+		}
+		
+		#main-progress-bar-handle {
+			height: 15px;
+			width: 15px;
+			background: #fff;
+			border: none;
+			padding: 0;
+			position: absolute;
+			margin: -13px 0 0;
+			cursor: pointer;
+		}
+		
+		#main-progress-bar-buffer {
+			background: #fff;
+			width: 0;
+		}
+		
+		.volume-bar {
+			height: 5px;
+			border: none;
+			cursor: pointer;
+		}
+		
+		#volume-bar-wrapper {
+			width: 100px;
+		}
+		
+		#volume-bar-total {
+			width: 100px;
+			background: rgba(255,255,255,.2);
+		}
+		
+		#volume-bar-current {
+			width: 100px;
+			background: #ccc;
+			position: absolute;
+			padding: 0;
+			margin: 0;
+			top: 12px;
+			left: 506px;
+		}
+		
+		#volume-bar-handle {
+			background: #fff;
+			border: none;
+			padding: 0;
+			height: 10px;
+			width: 10px;
+			margin: -12px 0 0 100px;
+			position: absolute;
+			cursor: pointer;
+		}
+		
+		/* CB Skin */
+		#video-controls {
+			position: absolute;
+			margin: -36px 0 0;
+			background: #000;
+			background: rgba(0,0,0,.5);
+			color: #fff;
+			font: normal 14px/14px 'Arial';
+		}
+		
+		.button {
+			height: 30px;
+			width: 22px;
+			cursor: pointer;
+			border: none;
+			text-indent: -99999px;
+			display: block;
+			float: left;
+			margin: 0;
+			padding: 0;
+		}
+		
+		.button:hover,
+		.button:focus {
+			background-color: rgba(0,153,255,.7);
+		}
+		
+		.button:active {
+			background-color: rgb(0,153,255);
+		}
+		
+		.slider {
+			display: block;
+			float: left;
+			height: 20px;
+		}
+		
+		#main-progress-bar-wrapper {
+			margin: 10px 5px 0;
+		}
+		
+		#main-progress-bar-handle {
+			left: 140px;
+		}
+		
+		#volume-bar-wrapper {
+			margin: 5px 5px 0;
+		}
+		
+		#volume-bar-handle {
+			margin: -9px 0 0;
+			left: 600px;
+		}
+		
+		#play-pause {
+			margin: 0 0 0 5px;
+		}
+		
+		#enlarge-reduce {
+			margin: 0 5px 0 2px;
+		}
+		
+		.play {
+			background: url('play.png') no-repeat center center;
+		}
+		
+		.pause {
+			background: url('pause.png') no-repeat center center;
+		}
+		
+		.stop {
+			background: url('stop.png') no-repeat center center;
+		}
+		
+		.rewind {
+			background: url('rewind.png') no-repeat center center;
+		}
+		
+		.fast-forward {
+			background: url('fastforward.png') no-repeat center center;
+		}
+		
+		.jump-back {
+			background: url('jumpback.png') no-repeat center center;
+		}
+		
+		.jump-ahead {
+			background: url('jumpahead.png') no-repeat center center;
+		}
+		
+		.handle {
+			border-radius: 10px;
+			background: #fff;
+		}
+		
+		.track {
+			border-radius: 5px;
+		}
+		
+		.time-text {
+			display: inline-block;
+			float: left;
+			line-height: 30px;
+			height: 30px;
+			width: 56px;
+			padding: 0 5px;
+		}
+		
+		.mute {
+			background: url('mute.png') no-repeat center center;
+		}
+		
+		.unmute {
+			background: url('unmute.png') no-repeat center center;
+		}
+		
+		.enlarge {
+			background: url('enlarge.png') no-repeat center center;
+		}
+		
+		.restore {
+			background: url('restore.png') no-repeat center center;
+		}
+		
+		</style>
+		
+	</head>
+	<body>
+		
+		<div id="video-container">
+			<video id="video1" width="640" height="360" preload="auto">
+				<source src="video1.mp4" type="video/mp4" />
+				<source src="video1.webm" type="video/webm" />
+				<source src="video1.ogv" type="video/ogg" />
+				
+				<object id="flashVideoPlayer" width="640" height="360">
+					<param name="movie" value="CBVideoPlayer.swf">
+					<embed name="flashVideoPlayer" src="CBVideoPlayer.swf" width="640" height="360"></embed>
+				</object>
+			</video>
+			
+			<div id="video-controls">
+				
+				<div id="hideable-controls" class="hidden">
+					<button id="play-pause" class="button play">Play</button>
+					<button id="stop" class="button stop">Stop</button>
+					<button id="rewind" class="button rewind">Rewind</button>
+					<button id="fast-forward" class="button fast-forward">Fast Forward</button>
+					<button id="jump-back" class="button jump-back">Jump Back 15</button>
+					<button id="jump-ahead" class="button jump-ahead">Jump Ahead 15</button>
+					<div id="main-progress-bar-wrapper" class="seek-bar-wrapper slider">
+						<div id="main-progress-bar-buffer" class="main-progress-bar track"></div>
+						<button id="main-progress-bar-total" class="main-progress-bar track"></button>
+						<button id="main-progress-bar-current" class="main-progress-bar track"></button>
+						<button id="main-progress-bar-handle" class="handle"></button>
+					</div>
+					<span id="current-time" class="time-text">00:00:00</span>
+					<span id="total-time" class="time-text">00:00:00</span>
+					<button id="mute" class="button mute">Mute</button>
+					<div id="volume-bar-wrapper" class="slider">
+						<button id="volume-bar-total" class="volume-bar track"></button>
+						<button id="volume-bar-current" class="volume-bar track"></button>
+						<button id="volume-bar-handle" class="handle"></button>
+					</div>
+					<button id="enlarge-reduce" class="button enlarge">Enlarge Movie</button>
+				</div>
+				
+				<div id="small-progress-bar-wrapper" class="seek-bar-wrapper">
+					<div id="small-progress-bar-buffer" class="small-progress-bar"></div>
+					<button id="small-progress-bar-total" class="small-progress-bar"></button>
+					<button id="small-progress-bar-current" class="small-progress-bar"></button>
+				</div>
+			</div>
+			
+		</div>
+		
+		<p>Download the video in one of the following formats:</p>
+		<ul>
+			<li><a href="video1.webm">VP8 WebM (Open Standard)</a></li>
+			<li><a href="video1.ogv">Theora OGV (Open Standard)</a></li>
+			<li><a href="video1.mp4">H.264 MP4 (Proprietary Closed Format)</a></li>
+		</ul>
+		
+		<script>
+		var goshDarnVideo = function(videoName) {
+			'use strict';
+			
+			var videoTest = document.createElement('video'),
+				check = !!videoTest.canPlayType;
+				
+				if (check) {
+					console.log('yep');
+				} else {
+					console.log('nope');
+				}
+			
+			var video = document.getElementById(videoName),
+				videoControls = document.getElementById('video-controls'),
+				playPause = document.getElementById('play-pause'),
+				stop = document.getElementById('stop'),
+				rewind = document.getElementById('rewind'),
+				fastForward = document.getElementById('fast-forward'),
+				jumpBack = document.getElementById('jump-back'),
+				jumpAhead = document.getElementById('jump-ahead'),
+				currentTimeText = document.getElementById('current-time'),
+				totalTimeText = document.getElementById('total-time'),
+				smallProgressBarCurrent = document.getElementById('small-progress-bar-current'),
+				smallProgressBarTotal = document.getElementById('small-progress-bar-total'),
+				smallProgressBarBuffer = document.getElementById('small-progress-bar-buffer'),
+				mainProgressBarCurrent = document.getElementById('main-progress-bar-current'),
+				mainProgressBarTotal = document.getElementById('main-progress-bar-total'),
+				mainProgressBarHandle = document.getElementById('main-progress-bar-handle'),
+				mainProgressBarBuffer = document.getElementById('main-progress-bar-buffer'),
+				mute = document.getElementById('mute'),
+				volumeBarTotal = document.getElementById('volume-bar-total'),
+				volumeBarCurrent = document.getElementById('volume-bar-current'),
+				volumeBarHandle = document.getElementById('volume-bar-handle'),
+				enlargeReduce = document.getElementById('enlarge-reduce'),
+				hideableControls = document.getElementById('hideable-controls'),
+				videoWidth = video.width,
+				videoHeight = video.height,
+				enlargedWidth = video.width + (video.width / 2),
+				enlargedHeight = video.height + (video.height / 2),
+				mouseDown,
+				stillDown,
+				onSeekHandle,
+				seekHandleDown,
+				onVolumeHandle,
+				volumeHandleDown,
+				updateProgressBar,
+				updateTimeText,
+				enlarged = false,
+				mainHandleCushion = mainProgressBarHandle.offsetWidth / 2,
+				volumeHandleCushion = volumeBarHandle.offsetWidth / 2,
+				scrubHandleTrack,
+				volumeHandleTrack,
+				handleStart,
+				mainHandleBottom = mainProgressBarTotal.offsetLeft,
+				mainHandleTop = mainProgressBarTotal.offsetWidth +
+								mainProgressBarTotal.offsetLeft,
+				volumeHandleBottom = volumeBarTotal.offsetLeft,
+				volumeHandleTop = volumeBarTotal.offsetWidth +
+									volumeBarTotal.offsetLeft,
+				volumeCurrent = video.volume,
+				jumpToPercent,
+				mouseTrack,
+				lastSheet = document.styleSheets[document.styleSheets.length - 1],
+				lastRuleIndex = lastSheet.cssRules.length,
+				myVideoRuleIndex,
+				myControlsRuleIndex,
+				mySpacerRuleIndex,
+				myBackgroundRuleIndex,
+				mySmallProgressBarRuleIndex,
+				spacerDiv = document.createElement('div'),
+				backgroundDiv = document.createElement('div'),
+				e = window.event,
+				enlargeVideo = '#' + video.id + ' { position: absolute; margin: 0; padding: 0; width: ' + enlargedWidth + 'px; height: ' + enlargedHeight + 'px; left: ' + (window.innerWidth / 2 - enlargedWidth / 2) + 'px; top: ' + (window.innerHeight / 2 - enlargedHeight / 2) + 'px; }',
+				enlargeControls = '#' + videoControls.id + ' { position: absolute; margin: 0; padding: 0; top: ' + (window.innerHeight / 2 + enlargedHeight / 2) + 'px; }',
+			
+				placeholderSpace = '#spacer { width: ' + videoWidth + 'px; height: ' + videoHeight + 'px; }',
+			
+				blackBackground = '#black-background { position: fixed; width: 100%; height: 100%; background: #000; background: rgba(0, 0, 0, .75); top: 0; left: 0; }',
+				offsetLeftDiff,
+				smallProgressBarEnlarged,
+				onVideo,
+				tooClose,
+				controlHider,
+				playMovie,
+				setProgressBar,
+				progressBarSeek,
+				volumeBarSeek,
+				scrubbing,
+				scrubHandle,
+				stopMovie,
+				rewindMovie,
+				fastForwardMovie,
+				stopRewindFastForward,
+				jumpMovieBack,
+				jumpMovieAhead,
+				setTimeText,
+				muteUnmute,
+				onVolume,
+				volumeHandle,
+				catchMouseUp,
+				catchMouseMove,
+				loading,
+				resizeMovie,
+				showControls,
+				hideControls,
+				growBig;
+			
+			playMovie = function() {
+				if (video.paused) {
+					video.play();
+					playPause.innerHTML = 'Pause';
+					playPause.className = playPause.className.replace('play', 'pause');
+					updateProgressBar = setInterval(setProgressBar, 10);
+					updateTimeText = setInterval(setTimeText, 1000);
+				} else if (video.currentTime === video.duration) {
+					playPause.innerHTML = 'Play';
+					playPause.className = playPause.className.replace('pause', 'play');
+					//video.currentTime = 0;
+					video.pause();
+					clearInterval(updateProgressBar);
+					clearInterval(updateTimeText);
+				} else {
+					video.pause();
+					playPause.innerHTML = 'Play';
+					playPause.className = playPause.className.replace('pause', 'play');
+					clearInterval(updateProgressBar);
+					clearInterval(updateTimeText);
+				}
+			};
+			
+			setProgressBar = function() {
+				var duration = video.duration,
+					currentTime = video.currentTime,
+					percent = currentTime / duration,
+					currentSmallWidth = percent * smallProgressBarTotal.offsetWidth,
+					currentMainWidth = scrubHandleTrack - mainProgressBarTotal.offsetLeft;
+					
+				if (!video.paused &&
+					video.currentTime !== 0 &&
+					video.currentTime !== video.duration) {
+					scrubHandleTrack = (percent * mainProgressBarTotal.clientWidth) +
+											mainProgressBarTotal.offsetLeft;
+				}
+				
+				smallProgressBarCurrent.style.width = currentSmallWidth + 'px';
+				mainProgressBarCurrent.style.width = currentMainWidth + 'px';
+				
+				if (scrubHandleTrack !== mainHandleBottom &&
+					scrubHandleTrack !== mainHandleTop) {
+					mainProgressBarHandle.style.left = (scrubHandleTrack - mainHandleCushion) + 'px';
+				} else if (scrubHandleTrack === mainHandleBottom) {
+					mainProgressBarHandle.style.left = (mainHandleBottom - mainHandleCushion) + 'px';
+				} else if (scrubHandleTrack === mainHandleTop) {
+					mainProgressBarHandle.style.left = (mainHandleTop - mainHandleCushion) + 'px';
+				}
+				
+				if (percent === 1) {
+					playMovie();
+				}
+				
+				setTimeText();
+			};
+			
+			progressBarSeek = function(e) {
+				var duration = video.duration,
+					percent,
+					jumpTo,
+					x = e.clientX - this.offsetLeft - videoControls.offsetLeft;
+				
+				percent  = x / this.parentNode.offsetWidth;
+				
+				jumpTo = (percent * duration);
+				video.currentTime = jumpTo;
+				setProgressBar();
+				
+				mainProgressBarCurrent.style.width = (percent *
+														mainProgressBarTotal.offsetWidth) + 'px';
+				mainProgressBarHandle.style.left = (mainProgressBarCurrent.offsetLeft +
+														mainProgressBarCurrent.offsetWidth -
+														mainHandleCushion) + 'px';
+			};
+			
+			volumeBarSeek = function(e) {
+				var percent,
+					x = e.clientX - this.offsetLeft - videoControls.offsetLeft;
+				
+				percent = x / this.parentNode.offsetWidth;
+				
+				video.volume = percent;
+				
+				volumeBarCurrent.style.width = (percent *
+													volumeBarTotal.offsetWidth) + 'px';
+				volumeBarHandle.style.left = (volumeBarCurrent.offsetLeft +
+												volumeBarCurrent.offsetWidth -
+												volumeHandleCushion) + 'px';
+			};
+			
+			scrubbing = function() {
+				onSeekHandle = true;
+				mouseDown = true;
+				seekHandleDown = true;
+				handleStart = mainProgressBarHandle.offsetLeft;
+			};
+			
+			scrubHandle = function(e) {
+				
+				mouseTrack = e.clientX -
+								videoControls.offsetLeft -
+								mainHandleCushion;
+					
+				scrubHandleTrack = mainProgressBarHandle.offsetLeft +
+								mainHandleCushion;
+				
+				if ((scrubHandleTrack > mainHandleBottom) &&
+					(scrubHandleTrack < mainHandleTop)) {
+				
+					mainProgressBarHandle.style.left = mouseTrack + 'px';
+					
+				} else if (scrubHandleTrack < mainHandleBottom) {
+					scrubHandleTrack = mainHandleBottom;
+					onSeekHandle = false;
+					mainProgressBarHandle.style.left = (mainHandleBottom - mainHandleCushion) + 'px';
+					
+				} else if (scrubHandleTrack > mainHandleTop) {
+					scrubHandleTrack = mainHandleTop;
+					onSeekHandle = false;
+					mainProgressBarHandle.style.left = (mainHandleTop - mainHandleCushion) + 'px';
+					
+				}
+			};
+			
+			stopMovie = function() {
+				if (!video.paused) {
+					video.pause();
+					clearInterval(updateProgressBar);
+					clearInterval(updateTimeText);
+					playPause.innerHTML = 'Play';
+					playPause.className = playPause.className.replace('pause', 'play');
+				}
+				video.currentTime = 0;
+				smallProgressBarCurrent.style.width = 0;
+				mainProgressBarCurrent.style.width = 0;
+				mainProgressBarHandle.style.left = mainProgressBarTotal.offsetLeft + 'px';
+				setTimeText();
+			};
+			
+			rewindMovie = function() {
+				mouseDown = true;
+				video.pause();
+				stillDown = setInterval(function() {
+					if (mouseDown) {
+						video.currentTime -= 2;
+					}
+					
+					var percent = (video.currentTime / video.duration);
+					scrubHandleTrack = (percent * mainProgressBarTotal.clientWidth) +
+											mainProgressBarTotal.offsetLeft;
+					setProgressBar();
+				}, 250);
+			};
+			
+			fastForwardMovie = function() {
+				mouseDown = true;
+				video.pause();
+				stillDown = setInterval(function() {
+					if (mouseDown) {
+						video.currentTime += 2;
+					}
+					
+					var percent = (video.currentTime / video.duration);
+					scrubHandleTrack = (percent * mainProgressBarTotal.clientWidth) +
+											mainProgressBarTotal.offsetLeft;
+					setProgressBar();
+				}, 250);
+			};
+			
+			stopRewindFastForward = function() {
+				if (mouseDown === true) {
+					mouseDown = false;
+					clearInterval(stillDown);
+					if (!video.paused) {
+						playMovie();
+					}
+				}
+			};
+			
+			jumpMovieBack = function() {
+				video.currentTime -= 15;
+				var percent = (video.currentTime / video.duration);
+				scrubHandleTrack = (percent * mainProgressBarTotal.clientWidth) +
+											mainProgressBarTotal.offsetLeft;
+				setProgressBar();
+			};
+			
+			jumpMovieAhead = function() {
+				video.currentTime += 15;
+				var percent = (video.currentTime / video.duration);
+				scrubHandleTrack = (percent * mainProgressBarTotal.clientWidth) +
+											mainProgressBarTotal.offsetLeft;
+				setProgressBar();
+			};
+			
+			setTimeText = function() {
+				var currentTime = Math.floor(video.currentTime),
+					duration = Math.floor(video.duration),
+					seconds,
+					minutes,
+					hours,
+					timeElapsed,
+					totalTime;
+					
+				seconds = function(time) {
+					if (time < 10) {
+						return '0' + Math.floor(time);
+					} else if (time >= 10 && time < 60) {
+						return Math.floor(time).toString();
+					} else {
+						if ((time % 60) > 10) {
+							return '0' + Math.floor(time - ((time % 60) * 60));
+						} else {
+							return '0' + Math.floor(time - ((time % 60) * 60));
+						}
+					}
+				};
+				
+				minutes = function(time) {
+					return Math.floor(time / 60) < 10 ? '0' + Math.floor(time / 60) : Math.floor(time / 60).toString();
+				};
+				
+				hours = function(time) {
+					return Math.floor(time / 3600) < 10 ? '0' + Math.floor(time / 3600) : Math.floor(time / 3600).toString();
+				};
+				
+				timeElapsed = hours(currentTime) + ':' + minutes(currentTime) + ':' + seconds(currentTime);
+				totalTime = hours(duration) + ':' + minutes(duration) + ':' + seconds(duration);
+				
+				currentTimeText.innerHTML = timeElapsed;
+				totalTimeText.innerHTML = totalTime;
+			};
+			
+			muteUnmute = function() {
+				if (!video.muted) {
+					video.muted = true;
+					this.innerHTML = 'Unmute';
+					this.className = this.className.replace('mute', 'unmute');
+				} else {
+					video.muted = false;
+					this.innerHTML = 'Mute';
+					this.className = this.className.replace('unmute', 'mute');
+				}
+			};
+			
+			onVolume = function() {
+				onVolumeHandle = true;
+				mouseDown = true;
+				volumeHandleDown = true;
+				handleStart = volumeBarHandle.offsetLeft;
+			};
+			
+			volumeHandle = function(e) {
+				mouseTrack = e.clientX -
+								videoControls.offsetLeft -
+								volumeHandleCushion;
+					
+				volumeHandleTrack = volumeBarHandle.offsetLeft +
+								volumeHandleCushion;
+											
+				if ((volumeHandleTrack >= volumeHandleBottom) && (volumeHandleTrack <= volumeHandleTop)) {
+									
+					volumeBarHandle.style.left = mouseTrack + 'px';
+					volumeBarCurrent.style.width = ((volumeBarTotal.offsetWidth -
+													 ((volumeHandleBottom +
+													   volumeBarTotal.offsetWidth) -
+													  mouseTrack)) +
+													volumeHandleCushion) + 'px';
+					
+				} else if (volumeHandleTrack < volumeHandleBottom) {
+					
+					volumeHandleTrack = volumeHandleBottom;
+					onVolumeHandle = false;
+					volumeBarHandle.style.left = (volumeHandleBottom -
+												  volumeHandleCushion) + 'px';
+					volumeBarCurrent.style.width = '0px';
+					
+				} else if (volumeHandleTrack > volumeHandleTop) {
+					
+					volumeHandleTrack = volumeHandleTop;
+					onVolumeHandle = false;
+					volumeBarHandle.style.left = (volumeHandleTop -
+												  volumeHandleCushion) + 'px';
+					volumeBarCurrent.style.width = volumeBarTotal.offsetWidth + 'px';
+					
+				}
+			};
+			
+			catchMouseUp = function() {
+				if (seekHandleDown) {
+					onSeekHandle = false;
+					seekHandleDown = false;
+					if (mainProgressBarHandle.offsetLeft !== handleStart) {
+						jumpToPercent = (scrubHandleTrack -
+											mainProgressBarTotal.offsetLeft) /
+											mainProgressBarTotal.offsetWidth;
+						video.currentTime = jumpToPercent * video.duration;
+						setProgressBar();
+					}
+				}
+				
+				if (volumeHandleDown) {
+					onVolumeHandle = false;
+					volumeHandleDown = false;
+					volumeCurrent = (volumeHandleTrack - volumeHandleBottom) / 100;
+					if (volumeBarHandle.offsetLeft !== handleStart) {
+						video.volume = volumeCurrent;
+					}
+				}
+				
+				if (mouseDown) {
+					mouseDown = false;
+					
+				}
+			};
+			
+			catchMouseMove = function(e) {
+				if (onSeekHandle && mouseDown) {
+					
+					scrubHandle(e);
+					
+				} else if (onVolumeHandle && mouseDown) {
+					
+					volumeHandle(e);
+					
+				} else if (!onSeekHandle && seekHandleDown) {
+					
+					mouseTrack = e.clientX -
+								video.offsetLeft -
+								mainHandleCushion;
+					
+					if ((mouseTrack > mainHandleBottom) &&
+						(mouseTrack < mainHandleTop)) {
+						mainProgressBarHandle.style.left = (e.clientX - video.offsetLeft - mainHandleCushion) + 'px';
+						onSeekHandle = true;
+					}
+				} else if (!onVolumeHandle && volumeHandleDown) {
+					
+					if (((e.clientX - volumeBarTotal.offsetLeft) >= 0) &&
+						 ((e.clientX - (volumeBarTotal.offsetLeft + volumeBarTotal.clientWidth)) < 0)) {
+						
+						onVolumeHandle = true;
+						volumeBarHandle.style.left = e.clientX + 'px';
+						
+					}
+				}
+				
+			};
+			
+			loading = setInterval(function() {
+				
+				if (video.readyState !== 0) {
+					tooClose = video.buffered.end(0) - (video.buffered.end(0) * 0.2);
+					smallProgressBarBuffer.style.width = (video.buffered.end(0) / video.duration) * smallProgressBarTotal.offsetWidth + 'px';
+					mainProgressBarBuffer.style.width = (video.buffered.end(0) / video.duration) * mainProgressBarTotal.offsetWidth + 'px';
+					if (video.buffered.end(0) === video.duration) {
+						clearInterval(loading);
+						hideControls();
+					}
+				}
+				
+				if (video.currentTime > tooClose) {
+					if (!video.paused) {
+						video.pause();
+						playPause.innerHTML = 'Play';
+					}
+					video.currentTime = tooClose;
+					setProgressBar();
+				}
+				
+			}, 100);
+			
+			resizeMovie = function() {
+				if (!enlarged) {								
+					lastSheet = document.styleSheets[document.styleSheets.length - 1];
+					lastRuleIndex = lastSheet.cssRules.length;
+					myVideoRuleIndex = lastRuleIndex;
+					myControlsRuleIndex = myVideoRuleIndex + 1;
+					mySpacerRuleIndex = myControlsRuleIndex + 1;
+					myBackgroundRuleIndex = mySpacerRuleIndex + 1;
+					mySmallProgressBarRuleIndex = myBackgroundRuleIndex + 1;
+					
+					this.innerHTML = 'Restore to original size';
+					this.className = this.className.replace('enlarge', 'restore');
+					
+					video.parentNode.insertBefore(spacerDiv, video);
+					video.parentNode.insertBefore(backgroundDiv, video);
+					spacerDiv.id = 'spacer';
+					backgroundDiv.id = 'black-background';
+					
+					video.width = enlargedWidth;
+					video.height = enlargedHeight;
+					
+					
+					lastSheet.insertRule(enlargeVideo, myVideoRuleIndex);
+					lastSheet.insertRule(enlargeControls, myControlsRuleIndex);
+					lastSheet.insertRule(placeholderSpace, mySpacerRuleIndex);
+					lastSheet.insertRule(blackBackground, myBackgroundRuleIndex);
+					
+					offsetLeftDiff = '-' + (videoControls.offsetLeft - video.offsetLeft) + 'px';
+					smallProgressBarEnlarged = '#small-progress-bar-wrapper { top: 0; width: ' + enlargedWidth + 'px; left: ' + offsetLeftDiff + ' }';
+					smallProgressBarCurrent.style.width = (smallProgressBarCurrent.offsetWidth /
+															smallProgressBarTotal.offsetWidth) *
+															enlargedWidth + 'px';
+					lastSheet.insertRule(smallProgressBarEnlarged, mySmallProgressBarRuleIndex);
+					
+					enlarged = true;
+				} else {									
+					this.innerHTML = 'Enlarge Movie';
+					this.className = this.className.replace('restore', 'enlarge');
+					
+					video.width = videoWidth;
+					video.height = videoHeight;
+					
+					video.parentNode.removeChild(spacerDiv);
+					video.parentNode.removeChild(backgroundDiv);
+					
+					// Must go before the removal of the rules below in order to
+					// calculate the percent properly.
+					smallProgressBarCurrent.style.width = (smallProgressBarCurrent.offsetWidth /
+															smallProgressBarTotal.offsetWidth) *
+															videoWidth + 'px';
+					// Deleted in reverse order because when a rule is deleted the
+					// browser will shift the remaining rules above it numerically
+					// down to prevent a gap. Deleting each rule individually,
+					// rather than looping, provides easier debugging.
+					lastSheet.deleteRule(mySmallProgressBarRuleIndex);
+					lastSheet.deleteRule(myBackgroundRuleIndex);
+					lastSheet.deleteRule(mySpacerRuleIndex);
+					lastSheet.deleteRule(myControlsRuleIndex);
+					lastSheet.deleteRule(myVideoRuleIndex);
+					
+					enlarged = false;
+				}
+			};
+			
+			showControls = function() {
+				onVideo = true;
+				hideableControls.style.display = 'block';
+			};
+			
+			hideControls = function() {
+				onVideo = false;
+	
+				controlHider = setTimeout(function(){
+					if (!onVideo) {
+						hideableControls.style.display = 'none';
+					}
+					
+					clearTimeout(controlHider);
+					
+				}, 500);
+			};
+			
+			growBig = function() {
+				setInterval(function(){
+					if (video.width < enlargedWidth) {
+						video.width += 10;
+					}
+					
+					if (video.height < enlargedHeight) {
+						video.height += 10;
+					}
+				}, 4);
+			};
+			
+			playPause.addEventListener('click', playMovie, false);
+			stop.addEventListener('click', stopMovie, false);
+			rewind.addEventListener('mousedown', rewindMovie, false);
+			rewind.addEventListener('mouseup', stopRewindFastForward);
+			rewind.addEventListener('mouseout', stopRewindFastForward, false);
+			fastForward.addEventListener('mousedown', fastForwardMovie, false);
+			fastForward.addEventListener('mouseup', stopRewindFastForward, false);
+			fastForward.addEventListener('mouseout', stopRewindFastForward, false);
+			jumpBack.addEventListener('click', jumpMovieBack, false);
+			jumpAhead.addEventListener('click', jumpMovieAhead, false);
+			smallProgressBarTotal.addEventListener('click', progressBarSeek, false);
+			smallProgressBarCurrent.addEventListener('click', progressBarSeek, false);
+			mainProgressBarTotal.addEventListener('click', progressBarSeek, false);
+			mainProgressBarCurrent.addEventListener('click', progressBarSeek, false);
+			mainProgressBarHandle.addEventListener('mousedown', scrubbing, false);
+			mute.addEventListener('click', muteUnmute, false);
+			volumeBarHandle.addEventListener('mousedown', onVolume, false);
+			volumeBarTotal.addEventListener('click', volumeBarSeek, false);
+			volumeBarCurrent.addEventListener('click', volumeBarSeek, false);
+			enlargeReduce.addEventListener('click', resizeMovie, false);
+			
+			video.parentNode.addEventListener('mouseover', showControls, false);
+			video.parentNode.addEventListener('mouseout', hideControls, false);
+			
+			document.addEventListener('mouseup', catchMouseUp, false);
+			document.addEventListener('mousemove', catchMouseMove, false);
+		};
+		
+		goshDarnVideo('video1');
+		
+		</script>
+		
+	</body>
+</html>
