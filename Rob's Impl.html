@@ -123,65 +123,13 @@
 		
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
         
-	</head>
-	<body>
-		
-		<div id="video-container">
-            <video id="video1" width="640" height="360">
-				<source src="video1.mp4" type="video/mp4" />
-                <source src="video1.webm" type="video/webm" />
-				<source src="video1.ogv" type="video/ogg" />
-			</video>
-            
-            <object id="flashVideoPlayer" width="640" height="360">
-                <param name="movie" value="CBVideoPlayer.swf">
-                <embed name="flashVideoPlayer" src="CBVideoPlayer.swf" width="640" height="360">
-                </embed>
-            </object>
-			
-			<div id="video-controls">
-                <div id="small-progress-bar-wrapper" class="seek-bar-wrapper">
-					<button id="small-progress-bar-total" class="small-progress-bar"></button>
-					<button id="small-progress-bar-current" class="small-progress-bar"></button>
-				</div>
-				<button id="play-pause">Play</button>
-				<button id="stop">Stop</button>
-				<button id="rewind">Rewind</button>
-				<button id="fast-forward">Fast Forward</button>
-				<button id="jump-back">Jump Back 15</button>
-				<button id="jump-ahead">Jump Ahead 15</button>
-				<div id="main-progress-bar-wrapper" class="seek-bar-wrapper">
-					<button id="main-progress-bar-total" class="main-progress-bar"></button>
-					<button id="main-progress-bar-current" class="main-progress-bar"></button>
-					<button id="main-progress-bar-handle"></button>
-				</div>
-				<span id="current-time">0:00</span>
-				<span id="total-time">0:00</span>
-				<button id="mute">Mute</button>
-				<div id="volume-bar-wrapper">
-					<button id="volume-bar-total" class="volume-bar"></button>
-					<button id="volume-bar-current" class="volume-bar"></button>
-					<button id="volume-bar-handle"></button>
-				</div>
-				<button id="enlarge">Enlarge Movie</button>                
-			</div>
-		
-		
-			<p>Download the video in one of the following formats:</p>
-			<ul>
-				<li><a href="video1.webm">VP8 WebM (Open Standard)</a></li>
-				<li><a href="video1.ogv">Theora OGV (Open Standard)</a></li>
-				<li><a href="video1.mp4">H.264 MP4 (Proprietary Closed Format)</a></li>
-			</ul>
-		</div>
-		
-		<script>
-			$(document).ready(function() {
+        <script>
+            $(document).ready(function() {
                 var supports_html5_video = function() {
                     return !!document.createElement('video').canPlayType;
                 };                
                 //var html5 = supports_html5_video();
-                var html5 = true;
+                var html5 = false;
                 
                 /*
                  * Removes the element with the given id from the dom
@@ -189,7 +137,7 @@
                 var remove = function(id)
                 {
                     return (elem=document.getElementById(id)).parentNode.removeChild(elem);
-                };
+                }
                 
                 if (html5) {
                     remove('flashVideoPlayer');
@@ -518,7 +466,7 @@
 
                     while (flashObject.getSeeking()) {
                     }
-                };
+                }
                 
                 playPause.onclick = playMovie;
                 stop.onclick = stopMovie;
@@ -657,6 +605,62 @@
                 }, 100);
             
             });
+        </script>
+        
+	</head>
+	<body>
+		
+		<div id="video-container">
+            <video id="video1" width="640" height="360">
+				<source src="http://video.cblocal.org/video1.mp4" type="video/mp4" />
+                <source src="video1.webm" type="video/webm" />
+				<source src="video1.ogv" type="video/ogg" />
+			</video>
+            
+            <object id="flashVideoPlayer" width="640" height="360">
+                <param name="movie" value="CBVideoPlayer.swf">
+                <embed name="flashVideoPlayer" src="CBVideoPlayer.swf" width="640" height="360">
+                </embed>
+            </object>
+			
+			<div id="video-controls">
+                <div id="small-progress-bar-wrapper" class="seek-bar-wrapper">
+					<button id="small-progress-bar-total" class="small-progress-bar"></button>
+					<button id="small-progress-bar-current" class="small-progress-bar"></button>
+				</div>
+				<button id="play-pause">Play</button>
+				<button id="stop">Stop</button>
+				<button id="rewind">Rewind</button>
+				<button id="fast-forward">Fast Forward</button>
+				<button id="jump-back">Jump Back 15</button>
+				<button id="jump-ahead">Jump Ahead 15</button>
+				<div id="main-progress-bar-wrapper" class="seek-bar-wrapper">
+					<button id="main-progress-bar-total" class="main-progress-bar"></button>
+					<button id="main-progress-bar-current" class="main-progress-bar"></button>
+					<button id="main-progress-bar-handle"></button>
+				</div>
+				<span id="current-time">0:00</span>
+				<span id="total-time">0:00</span>
+				<button id="mute">Mute</button>
+				<div id="volume-bar-wrapper">
+					<button id="volume-bar-total" class="volume-bar"></button>
+					<button id="volume-bar-current" class="volume-bar"></button>
+					<button id="volume-bar-handle"></button>
+				</div>
+				<button id="enlarge">Enlarge Movie</button>                
+			</div>
+		
+		
+			<p>Download the video in one of the following formats:</p>
+			<ul>
+				<li><a href="video1.webm">VP8 WebM (Open Standard)</a></li>
+				<li><a href="video1.ogv">Theora OGV (Open Standard)</a></li>
+				<li><a href="video1.mp4">H.264 MP4 (Proprietary Closed Format)</a></li>
+			</ul>
+		</div>
+		
+		<script>
+
 		</script>
 		
 	</body>
