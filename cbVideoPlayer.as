@@ -1,13 +1,16 @@
 package
 {
-    import fl.video.*;	
+    import fl.video.*;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.external.*;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+    import flash.display.Stage;
+    import flash.display.StageAlign;
+    import flash.display.StageScaleMode;
 	
-	public class CBVideoPlayer extends Sprite 
+	public class CBVideoPlayer extends Sprite
 	{
 		private var videoPath:String = "/video1.mp4";
 		private var player:VideoPlayer;
@@ -16,20 +19,26 @@ package
 		private var seekpoints:Array = [];
 		private var state:String;
 		private var rewindTimer:Timer;
-		private var forwardTimer:Timer;				
+		private var forwardTimer:Timer;
+        private var wasPlaying:Boolean;
 		
 		public function CBVideoPlayer() {
 			_forceNCManager:fl.video.NCManager;
-			player = new VideoPlayer();
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+            stage.align = StageAlign.TOP_LEFT;
+            player = new VideoPlayer();
             player.playheadUpdateInterval = 1000;
 			player.load(videoPath);
 			player.setSize(640, 360); // this should probably come from html tag attributes
 			player.x = 0;
 			player.y = 0;
-			player.addEventListener(VideoEvent.PLAYHEAD_UPDATE, playheadUpdateHandler);
+            player.autoRewind = true;
+			player.addEventListener(VideoEvent.COMPLETE, playerReadyHandler);
+            player.addEventListener(VideoEvent.PLAYHEAD_UPDATE, playheadUpdateHandler);
 			player.addEventListener(VideoEvent.STATE_CHANGE, stateChangeHandler);
-			player.addEventListener(MetadataEvent.METADATA_RECEIVED, metadataRecievedHandler);			
-			addChild(player);
+            player.addEventListener(VideoEvent.COMPLETE, playingCompleteHandler);
+			player.addEventListener(MetadataEvent.METADATA_RECEIVED, metadataRecievedHandler);
+            addChild(player);
 			
 			rewindTimer = new Timer(250);
 			rewindTimer.addEventListener(TimerEvent.TIMER, rewindTimerRun);
@@ -46,7 +55,8 @@ package
 				ExternalInterface.addCallback("getPaused", getPaused);
 				ExternalInterface.addCallback("setPaused", setPaused);
 				ExternalInterface.addCallback("setPlaying", setPlaying);
-				ExternalInterface.addCallback("setStopped", setStopped);
+                ExternalInterface.addCallback("isStopped", isStopped);
+                ExternalInterface.addCallback("setStopped", setStopped);
 				ExternalInterface.addCallback("getVolume", getVolume);
 				ExternalInterface.addCallback("setVolume", setVolume);				
 				ExternalInterface.addCallback("jumpBack", jumpBack);				
@@ -55,7 +65,7 @@ package
 				ExternalInterface.addCallback("forwardStart", forwardStart);				
 				ExternalInterface.addCallback("rewindStop", rewindStop);				
 				ExternalInterface.addCallback("forwardStop", forwardStop);								
-				//ExternalInterface.addCallback("seek", seek);				
+				ExternalInterface.addCallback("progressBarTo", progressBarTo);
 			}
 		}
 
@@ -76,19 +86,29 @@ package
 		}
 
 		public function rewindStart():void {
-			rewindTimer.start();
+			wasPlaying = player.state == VideoState.PLAYING;
+            player.pause();
+            rewindTimer.start();
 		}
 		
 		public function rewindStop():void {
 			rewindTimer.stop();
+            if (wasPlaying) {
+                player.play();
+            }
 		}
 		
 		public function forwardStart():void {
-			forwardTimer.start();
+			wasPlaying = player.state == VideoState.PLAYING;
+            player.pause();
+            forwardTimer.start();
 		}
 		
 		public function forwardStop():void {
 			forwardTimer.stop();
+            if (wasPlaying) {
+                player.play();
+            }
 		}		
 		
 		private function rewindTimerRun(event:TimerEvent):void {
@@ -113,8 +133,8 @@ package
 		
 		public function getPaused():Boolean {
 			return player.state == VideoState.PAUSED || player.state == VideoState.STOPPED;
-		}		
-		
+		}
+
 		public function setPaused():void {
 			player.pause();
 		}		
@@ -125,9 +145,12 @@ package
 		
 		public function setStopped():void {
 			player.stop();
-			player.seek(0);			
 		}
-		
+
+		public function isStopped():Boolean {
+            return player.state == VideoState.STOPPED;
+		}
+
 		public function getVolume():Number {
 			var volLevel:Number;
 			
@@ -208,11 +231,34 @@ package
 			}
 		}
 		
-		/*
-		public function seek(time:Number):void {
-			player.seek(time);
+		public function progressBarTo(time:Number):void {
+			if (state == VideoState.SEEKING) {
+                return;
+            }
+
+            if (time >= player.totalTime) {
+				//hackaroo: subtracting the .1 because for some reason when a seek is called with
+                //a time exactly or near equaling the total time - it seems to be ignored.
+                time = player.totalTime - .1;
+			}
+            else if (time < 0) {
+                time = 0;
+            }
+
+            //ExternalInterface.call('console.log(\'--' + time + '\')');
+            //ExternalInterface.call('console.log(\'-' + player.playheadTime + '\')');
+            //ExternalInterface.call('console.log(\'tot-' + player.totalTime + '\')');
+            //ExternalInterface.call('console.log(\'pprevInd: ' + seekpoints.indexOf(previousSeekpoint(player.playheadTime)) + '\')');
+            //ExternalInterface.call('console.log(\'nextInd: ' + seekpoints.indexOf(nextSeekpoint(time)) + '\')');
+
+            player.seek(time);
+
+            // If the time will not trigger a playhead update, manually make the call to the js function
+            if (seekpoints.indexOf(nextSeekpoint(time)) - seekpoints.indexOf(previousSeekpoint(player.playheadTime)) <= 1)
+            {
+                ExternalInterface.call('goshDarnVideo.setProgressBar', player.playheadTime, player.totalTime);
+            }
 		}
-		*/		
 
 		private function roundToNearestDecimal(input:Number, decimalPlace:Number=10):Number {
 			return Math.round(input * decimalPlace) / decimalPlace;
@@ -225,8 +271,14 @@ package
 			return String(minutes) + ':' + String(roundToNearestDecimal(seconds, 1));
 		}
 		
-		private function playheadUpdateHandler(event:VideoEvent):void {
-			ExternalInterface.call('setTimeText', event.playheadTime, player.totalTime);
+        private function playheadUpdateHandler(event:VideoEvent):void {
+            ExternalInterface.call('goshDarnVideo.setTimeText', event.playheadTime, player.totalTime);
+            ExternalInterface.call('goshDarnVideo.setProgressBar', event.playheadTime, player.totalTime);
+		}
+
+        private function playingCompleteHandler(event:VideoEvent):void {
+            ExternalInterface.call('goshDarnVideo.setTimeText', player.totalTime, player.totalTime);
+            ExternalInterface.call('goshDarnVideo.setProgressBar', player.totalTime, player.totalTime);
 		}
 
 		private function stateChangeHandler(event:VideoEvent):void {
@@ -236,7 +288,14 @@ package
 		private function metadataRecievedHandler(event:MetadataEvent):void {
 			for (var item:Object in event.info.seekpoints) {
 				seekpoints.push(event.info.seekpoints[item]['time']);
+                //var poo:String = event.info.seekpoints[item]['time'];
+                //ExternalInterface.call('console.log(' + poo + ')');
 			}
-		}		
+		}
+
+        private function playerReadyHandler(event:VideoEvent):void {
+            // Let js know that the player is ready
+            ExternalInterface.call('goshDarnVideo.flashVideoPlayerReady()');
+        }
 	}
 }
